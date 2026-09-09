@@ -1,0 +1,11 @@
+# Data files
+*.rds
+
+# Quarto
+/.quarto/
+
+# R artifacts
+.Rhistory
+.RData
+.Renviron
+.Rproj.user
