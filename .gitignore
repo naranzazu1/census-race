@@ -10,3 +10,5 @@
 .RData
 .Renviron
 .Rproj.user
+
+**/*.quarto_ipynb

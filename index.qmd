@@ -1,49 +1,63 @@
 ---
-title: "Racial Concentration in Sarasota County, Florida"
+title: "Racial and Ethnic Distribution in Sarasota County, Florida"
 execute:
   echo: false
   message: false
   warning: false
 ---
 
-Sarasota County, Florida, presents a striking example of geographic racial segregation. According to the 2020 Decennial Census, the median census tract in Sarasota County has a Black or African American population of just 1.2%. However, in North Sarasota, **Census Tract 3**—which encompasses the historic African American community of Newtown—is **74.5% Black**.
+Sarasota County, Florida, shows distinctive geographic patterns across racial and ethnic groups. While White residents make up the majority across most census tracts, minority communities are concentrated in distinct areas—such as the historic Black community of Newtown (Tract 3) in North Sarasota and growing Hispanic communities in central and southern sections of the county.
 
 ```{r}
-#| label: map-sarasota-race
-#| fig-width: 8
-#| fig-height: 6
+#| label: map-sarasota-race-panels
+#| fig-width: 9
+#| fig-height: 8
 
 library(tidyverse)
 library(sf)
 
-# Load pre-downloaded Census tract data and compute percentages
-sarasota <- read_rds("sarasota_race.rds") |>
+# Load pre-downloaded Census data and reshape the 4 major groups
+sarasota <- read_rds("sarasota_race.rds")
+
+sarasota_long <- sarasota |>
+  select(GEOID, total, White = white, Hispanic = hispanic, Black = black, Asian = asian, geometry) |>
+  pivot_longer(
+    cols = c(White, Hispanic, Black, Asian),
+    names_to = "race",
+    values_to = "count"
+  ) |>
   mutate(
-    pct_black = if_else(total > 0, 100 * (black / total), NA_real_)
+    pct = if_else(total > 0, 100 * (count / total), NA_real_),
+    race = factor(race, levels = c("White", "Hispanic", "Black", "Asian"))
   )
 
-# Map Black population share by census tract
-ggplot(sarasota) +
-  geom_sf(aes(fill = pct_black), color = "white", linewidth = 0.2) +
+# 4-panel choropleth map
+ggplot(sarasota_long) +
+  geom_sf(aes(fill = pct), color = "white", linewidth = 0.1) +
+  facet_wrap(~ race, ncol = 2) +
   scale_fill_viridis_c(
     option = "magma",
     direction = -1,
-    name = "% Black",
+    name = "Share (%)",
     labels = scales::label_percent(scale = 1)
   ) +
   theme_void() +
   labs(
-    title = "Black Population Share by Census Tract",
+    title = "Racial and Ethnic Share by Census Tract",
     subtitle = "Sarasota County, FL (2020 Decennial Census)",
     caption = "Source: US Census Bureau (Table P2)"
   ) +
   theme(
     plot.title = element_text(face = "bold", size = 16),
     plot.subtitle = element_text(size = 11, color = "gray30", margin = margin(b = 10)),
-    legend.position = "right"
+    strip.text = element_text(face = "bold", size = 12, margin = margin(b = 6)),
+    legend.position = "bottom"
   )
 ```
 
-### The History of Newtown
+### Key Takeaways
 
-Newtown was established in 1914 when Black residents were pushed out of downtown Sarasota's Overtown neighborhood during Jim Crow segregation. Over a century later, the Census data shows how strongly historical settlement patterns persist in Sarasota's neighborhood demographics today.
+- **White:** Forms a high percentage of the population across almost all coastal, suburban, and rural tracts.
+- **Hispanic:** Clusters primarily in urban and suburban corridors with tracts reaching 30–38% Hispanic.
+- **Black:** Strongly concentrated in North Sarasota (Newtown, Tract 3 reaches 74.5%), while remaining below 3% in most other tracts.
+- **Asian:** Represents a smaller proportion countywide (typically 1–3%), with subtle pockets in suburban neighborhoods.
