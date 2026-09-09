@@ -22,6 +22,7 @@ sarasota_race <- get_decennial(
   state = "FL",
   county = "Sarasota",
   year = 2020,
+  geometry = TRUE,
   output = "wide"
 )
 

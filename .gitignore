@@ -1,8 +1,9 @@
 # Data files
 *.rds
 
-# Quarto
+# Quarto build directories
 /.quarto/
+/_site/
 
 # R artifacts
 .Rhistory
